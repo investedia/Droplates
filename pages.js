@@ -35,12 +35,17 @@
     const q = $('#q'), fc = $('#f-cat'), fp = $('#f-plat'), ft = $('#f-tier'), fpr = $('#f-price');
     const fromURL = () => { const p = new URLSearchParams(location.search); [[q, 'q'], [fc, 'cat'], [fp, 'plat'], [ft, 'tier'], [fpr, 'price']].forEach(([el, k]) => { if (p.has(k)) el.value = p.get(k); }); };
     const toURL = () => { const p = new URLSearchParams(); [[q, 'q'], [fc, 'cat'], [fp, 'plat'], [ft, 'tier'], [fpr, 'price']].forEach(([el, k]) => { if (el.value) p.set(k, el.value); }); history.replaceState(null, '', p.toString() ? '?' + p : location.pathname); };
+    const templatesBySlug = new Map(D.templates.map(template => [template.slug, template]));
+    const cards = $$('.tcard', grid).map(card => {
+      const template = templatesBySlug.get(card.dataset.slug);
+      const searchText = [template.name, template.summary, ...template.tags, D.meta.categories[template.category]].join(' ').toLowerCase();
+      return { card, template, searchText };
+    });
     const apply = () => {
       const term = q.value.trim().toLowerCase();
       let n = 0;
-      $$('.tcard', grid).forEach(card => {
-        const t = D.templates.find(x => x.slug === card.dataset.slug);
-        const ok = (!term || [t.name, t.summary, ...t.tags, D.meta.categories[t.category]].join(' ').toLowerCase().includes(term))
+      cards.forEach(({ card, template: t, searchText }) => {
+        const ok = (!term || searchText.includes(term))
           && (!fc.value || t.category === fc.value)
           && (!fp.value || t.platforms.includes(fp.value))
           && (!ft.value || t.tier === ft.value)
@@ -59,14 +64,14 @@
   /* Droplates Match: catalog-based scoring, runs in the browser */
   const form = $('#match');
   if (form && D) {
-    const score = (t, goal, plat, budget, desc) => {
+    const score = (t, goal, plat, budget, words) => {
       if (plat !== 'any' && !t.platforms.includes(plat)) return null;
       if (t.budget > budget) return null;
       let s = 0; const reasons = [];
       if (t.goals.includes(goal)) { s += 50; reasons.push('Built for: ' + D.meta.goals[goal].toLowerCase()); }
       if (plat !== 'any') { s += 20; reasons.push('Works on ' + D.meta.platforms[plat]); }
       s += Math.max(0, 15 - (t.budget - 1) * 5 - (t.price > 0 ? 0 : 0));
-      const words = desc.toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3);
+
       const hits = t.tags.filter(tag => words.some(w => tag.includes(w) || w.includes(tag)));
       if (hits.length) { s += 10 * hits.length; reasons.push('Matches your description: ' + hits.join(', ')); }
       return { t, s, reasons };
@@ -77,7 +82,8 @@
       if (!goal) { $('#merr').textContent = 'Choose a goal to continue.'; form.elements.goal[0].focus(); return; }
       $('#merr').textContent = '';
       const plat = form.elements.plat.value, budget = +form.elements.budget.value, desc = $('#desc').value;
-      const ranked = D.templates.map(t => score(t, goal, plat, budget, desc)).filter(Boolean).sort((a, b) => b.s - a.s).slice(0, 3);
+      const words = desc.toLowerCase().split(/[^a-z]+/).filter(word => word.length > 3);
+      const ranked = D.templates.map(t => score(t, goal, plat, budget, words)).filter(Boolean).sort((a, b) => b.s - a.s).slice(0, 3);
       const out = $('#results');
       out.innerHTML = ranked.length ? ranked.map(r => `<a class="rcard" href="/templates/${r.t.slug}/">
         <div><span class="tier">${D.meta.tiers[r.t.tier]}</span><h3>${esc(r.t.name)}</h3><p>${esc(r.reasons.join('. ') || r.t.summary)}.</p>
