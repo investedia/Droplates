@@ -1,11 +1,12 @@
 // Generates static pages from data/templates.json. No framework, no dependencies.
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
+const SITE = process.env.DROPLATES_SITE || path.join(ROOT, '..', 'droplates-frontend');
 const D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/templates.json'), 'utf8'));
 const M = D.meta, T = D.templates;
 const eur = n => n === 0 ? '€0' : '€' + n.toFixed(2).replace('.00', '');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const write = (rel, html) => { const f = path.join(ROOT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
+const write = (rel, html) => { const f = path.join(SITE, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
 const ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
 const head = (title, desc, depth) => {
@@ -62,7 +63,7 @@ const card = t => `<a class="tcard" href="${'/templates/' + t.slug + '/'}" data-
   <div class="tthumb ${t.tier}" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   <div class="tbody">
     <div class="trow"><span class="tier">${M.tiers[t.tier]}</span><span class="status">${t.status === 'released' ? 'Free download' : 'Planned'}</span></div>
-    <h3>${esc(t.name)}</h3>
+    <h2>${esc(t.name)}</h2>
     <p>${esc(M.categories[t.category])}</p>
     <div class="trow"><span class="price">${eur(t.price)}</span><span class="plat">${t.platforms.map(p => M.platforms[p]).join(' · ')}</span></div>
   </div></a>`;

@@ -90,7 +90,7 @@
    "name": "Portfolio & Personal Brand",
    "tier": "free",
    "status": "released",
-   "version": "1.0.0",
+   "version": "1.1.0",
    "price": 0,
    "category": "portfolio",
    "goals": [
@@ -112,9 +112,12 @@
    ],
    "summary": "A complete 5-page portfolio for designers, developers, photographers and creators.",
    "features": [
-    "Editorial homepage",
-    "Filterable project gallery",
-    "Case study page layout",
+    "Editorial homepage with featured project",
+    "Availability badge",
+    "Filterable project gallery (filters built from your categories)",
+    "Project tags",
+    "One case-study page for every project, with image gallery",
+    "Optional CV download",
     "About, experience and skills",
     "Contact form (connect your own form service)",
     "Light and dark themes"

@@ -11,7 +11,7 @@ Run: python3 tools/annotate.py
 import re, os, html
 from html.parser import HTMLParser
 
-ROOT = os.path.join(os.path.dirname(__file__), '..', 'products')
+ROOT = os.path.join(os.environ.get('DROPLATES_SITE') or os.path.join(os.path.dirname(__file__), '..', '..', 'droplates-frontend'), 'products')
 TEXT_TAGS = {'h1', 'h2', 'h3', 'h4', 'p', 'blockquote', 'figcaption', 'li', 'dd', 'dt', 'b', 'strong', 'small', 'summary', 'span', 'a', 'button'}
 SKIP_CLASSES = {'skip', 'nav-toggle', 'logo', 'eye', 'line', 'n'}
 
